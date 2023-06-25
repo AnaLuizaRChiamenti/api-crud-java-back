@@ -96,7 +96,7 @@ public class TaskController {
         return ResponseEntity.ok().body(user.getTasks());
     }
 
-    @PutMapping("/{email}/{idTask}/archive")
+    @PutMapping("/{email}/{idTask}/archived")
     public ResponseEntity archivedTask(@PathVariable String email, @PathVariable UUID idTask) {
         try {
             var task = DataBase.getTaskByID(idTask, email);
