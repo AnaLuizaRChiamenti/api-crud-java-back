@@ -7,7 +7,9 @@ public record AddTask(
         @NotBlank
         @NotNull
         String title,
-        String description
+        String description,
+        @NotNull
+        String emailuser
 
 ) {
 }
