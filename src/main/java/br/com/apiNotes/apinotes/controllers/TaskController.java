@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @RestController
 @CrossOrigin(origins = "*")
 @RequestMapping("/tasks")
-@NoArgsConstructor
+
 public class TaskController {
     @Autowired
     private UserRepository userRepository;
@@ -31,23 +31,14 @@ public class TaskController {
 
     @PostMapping("/{email}")
     @Transactional
-    public ResponseEntity addTask(@PathVariable String email, @RequestBody @Valid AddTask newTask, String emailuser){
-//        var user = userRepository.getReferenceByEmail(email);
-//
-//        if(user == null) {
-//            return ResponseEntity.badRequest().body(new ErrorData("Usuário não localizado."));
-//        }
-//         user.getTasks().add(new Task(newTask));
-//        userTaskRepository.save(new Task(newTask));
-//        return ResponseEntity.ok().body(newTask);
+    public ResponseEntity addTask(@PathVariable String email, @RequestBody @Valid AddTask newTask, String emailUser){
+        var userEmail = userRepository.findById(newTask.emailUser());
 
-        var optionalUser = userRepository.findById(newTask.emailuser());
-
-        if(optionalUser.isEmpty()) {
+        if(userEmail.isEmpty()) {
             return ResponseEntity.badRequest().body(new ErrorData("Usuário não localizado."));
         }
 
-        var user = optionalUser.get();
+        var user = userEmail.get();
 
         var task = new Task(newTask, user.getEmail());
         userTaskRepository.save(task);
@@ -55,16 +46,27 @@ public class TaskController {
     }
 
     @GetMapping("/{email}")
-    public ResponseEntity getTasks(@PathVariable String email, @RequestParam(required = false) String title, @RequestParam(required = false) boolean archived) {
-        var checkUser = userRepository.getReferenceByEmail(email);
-//        if(checkUser.isEmpty()){
-//            return ResponseEntity.badRequest().body(new ErrorData("Usuário não encontrado!"));
-//        }
-
+    public ResponseEntity getTasks(@PathVariable String email, @RequestParam(required = false) String title, @RequestParam(required = false) boolean archived){
+        var checkUser = userRepository.getReferenceById(email);
 
         var tasks = checkUser.getTasks();
 
+        if(tasks == null) {
+            return ResponseEntity.badRequest().body(new ErrorData("Nenhum recado adicionado."));
+        }
+
+        if(title != null) {
+            tasks = tasks.stream().filter(t -> t.getTitle().contains((title))).toList();
+            return ResponseEntity.ok().body(tasks);
+        }
+
+        if(archived) {
+            tasks = tasks.stream().filter(a -> a.getArchived().equals(true)).toList();
+            return ResponseEntity.ok().body(tasks);
+        }
+
         return  ResponseEntity.ok().body(tasks.stream().map(TasksDetail::new).toList());
+
     }
 
 

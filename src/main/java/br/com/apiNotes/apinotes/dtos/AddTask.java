@@ -9,7 +9,7 @@ public record AddTask(
         String title,
         String description,
         @NotNull
-        String emailuser
+        String emailUser
 
 ) {
 }
